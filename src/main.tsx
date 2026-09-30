@@ -1,13 +1,14 @@
 import { StrictMode } from 'react'
 import { createRoot } from 'react-dom/client'
+import { App } from './App'
 import { AuthGate } from './auth'
-import { MetconSimulatorPage } from './MetconSimulatorPage'
 import './index.css'
+import './WodsPage.css'
 
 createRoot(document.getElementById('root')!).render(
   <StrictMode>
     <AuthGate>
-      <MetconSimulatorPage />
+      <App />
     </AuthGate>
   </StrictMode>,
 )
