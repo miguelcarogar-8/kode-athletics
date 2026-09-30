@@ -4,14 +4,14 @@ import './AuthScreen.css'
 
 type Mode = 'login' | 'register'
 
-export function AuthScreen() {
+export function AuthScreen({ initialNotice = null }: { initialNotice?: string | null }) {
   const [mode, setMode] = useState<Mode>('login')
   const [name, setName] = useState('')
   const [email, setEmail] = useState('')
   const [password, setPassword] = useState('')
   const [repeat, setRepeat] = useState('')
   const [error, setError] = useState<string | null>(null)
-  const [notice, setNotice] = useState<string | null>(null)
+  const [notice, setNotice] = useState<string | null>(initialNotice)
   const [busy, setBusy] = useState(false)
 
   const switchMode = (next: Mode) => {
