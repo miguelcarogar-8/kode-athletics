@@ -1,0 +1,44 @@
+@import url('https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@600;700&family=Manrope:wght@400;600;700&display=swap');
+
+:root {
+  --font-display: 'Barlow Condensed', 'Arial Narrow', sans-serif;
+  --font-body: 'Manrope', system-ui, sans-serif;
+  --color-primary: #c6ff00;
+  --color-primary-hover: #d4ff3d;
+  --color-primary-rgb: 198, 255, 0;
+  --color-on-primary: #11150a;
+  --color-accent: #2ec4f7;
+  --color-accent-rgb: 46, 196, 247;
+  --color-bg: #16181c;
+  --color-bg-mid: #1c2026;
+  --color-text: #f4f1ec;
+  color-scheme: dark;
+  font-family: var(--font-body);
+  font-synthesis: none;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html,
+body,
+#root {
+  min-height: 100%;
+}
+
+body {
+  margin: 0;
+  background: var(--color-bg);
+  color: var(--color-text);
+}
+
+button,
+input,
+select {
+  font: inherit;
+}

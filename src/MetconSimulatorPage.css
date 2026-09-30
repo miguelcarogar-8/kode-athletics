@@ -1,0 +1,465 @@
+.wods__header {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 1rem;
+  margin-bottom: 1.5rem;
+}
+
+.metcon__account {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+}
+
+.metcon__account > span {
+  color: rgba(244, 241, 236, 0.8);
+}
+
+.brand {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.85rem;
+  margin: 0;
+}
+
+.brand img {
+  display: block;
+  width: 4.5rem;
+  height: 4.5rem;
+  object-fit: contain;
+  border-radius: 0.55rem;
+  flex-shrink: 0;
+}
+
+.brand__wordmark {
+  font-family: var(--font-display);
+  font-size: 1.7rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  line-height: 1;
+}
+
+.brand__kode {
+  color: #fff;
+}
+
+.brand__athletics {
+  color: var(--color-primary);
+}
+
+.wods {
+  min-height: 100svh;
+  padding: 1.5rem clamp(1.25rem, 4vw, 3rem) 3rem;
+  background:
+    radial-gradient(ellipse 60% 40% at 100% 0%, rgba(var(--color-primary-rgb), 0.16), transparent 55%),
+    radial-gradient(ellipse 50% 35% at 0% 100%, rgba(var(--color-accent-rgb), 0.12), transparent 55%),
+    linear-gradient(180deg, var(--color-bg) 0%, var(--color-bg-mid) 100%);
+  color: #f4f1ec;
+}
+
+.wods__hero h1 {
+  margin: 0 0 0.4rem;
+  font-family: var(--font-display);
+  font-size: clamp(2rem, 5vw, 3rem);
+  letter-spacing: 0.02em;
+  text-transform: uppercase;
+}
+
+.wods__hero p {
+  margin: 0 0 1.25rem;
+  max-width: 42rem;
+  color: rgba(244, 241, 236, 0.68);
+  line-height: 1.5;
+}
+
+.wods__ghost {
+  appearance: none;
+  border-radius: 0.35rem;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  text-decoration: none;
+  cursor: pointer;
+  border: 1px solid rgba(244, 241, 236, 0.25);
+  background: transparent;
+  color: rgba(244, 241, 236, 0.85);
+}
+
+.wods__ghost:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
+.metcon__layout {
+  display: grid;
+  grid-template-columns: minmax(0, 42rem) minmax(18rem, 24rem);
+  gap: 1.5rem;
+  align-items: start;
+}
+
+.metcon__builder,
+.metcon__result {
+  min-width: 0;
+}
+
+.metcon__rounds,
+.metcon__piece,
+.metcon__result {
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.5rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.metcon__rounds {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: space-between;
+  gap: 1rem;
+  margin-bottom: 0.8rem;
+  padding: 0.85rem 1rem;
+}
+
+.metcon__rounds > span,
+.metcon__time > span,
+.metcon__fields > span {
+  color: rgba(244, 241, 236, 0.62);
+  font-size: 0.85rem;
+}
+
+.metcon__cap {
+  display: grid;
+  justify-items: end;
+  gap: 0.55rem;
+}
+
+.metcon__rounds strong,
+.metcon__time strong {
+  min-width: 3.2rem;
+  font-variant-numeric: tabular-nums;
+  font-size: 1.45rem;
+  text-align: center;
+}
+
+.metcon__pieces {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.75rem;
+}
+
+.metcon__pieces li.is-over .metcon__piece {
+  border-color: var(--color-primary);
+}
+
+.metcon__pieces li.is-dragging {
+  opacity: 0.45;
+}
+
+.metcon__gap {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.6rem;
+  margin: 0.65rem 0 0;
+  padding: 0.55rem 0.2rem 0.1rem;
+}
+
+.metcon__piece {
+  padding: 0.9rem 1rem 1rem;
+}
+
+.metcon__piece.is-collapsed {
+  padding-bottom: 0.7rem;
+}
+
+.metcon__piece-head {
+  display: flex;
+  align-items: center;
+  gap: 0.75rem;
+  margin-bottom: 0.75rem;
+}
+
+.metcon__piece.is-collapsed .metcon__piece-head {
+  margin-bottom: 0;
+}
+
+.metcon__summary {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 0.75rem;
+  margin: 0;
+  padding: 0;
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+
+.metcon__summary strong {
+  font-weight: 650;
+}
+
+.metcon__summary em {
+  flex: none;
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: rgba(244, 241, 236, 0.62);
+}
+
+.metcon__handle {
+  flex: none;
+  display: grid;
+  place-items: center;
+  width: 2.2rem;
+  height: 2.2rem;
+  border: 1px solid rgba(244, 241, 236, 0.25);
+  border-radius: 0.35rem;
+  color: rgba(244, 241, 236, 0.7);
+  letter-spacing: -0.12em;
+  cursor: grab;
+  touch-action: none;
+  user-select: none;
+}
+
+.metcon__handle:active {
+  cursor: grabbing;
+}
+
+.metcon__piece-head > span:not(.metcon__handle) {
+  font-size: 0.78rem;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--color-primary);
+}
+
+.metcon__piece-actions {
+  margin-left: auto;
+}
+
+.metcon__piece-actions,
+.metcon__add,
+.metcon__time-row,
+.metcon__chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+  align-items: center;
+}
+
+.metcon__piece-actions button,
+.metcon__time-row button,
+.metcon__chips button,
+.metcon__rounds button {
+  appearance: none;
+  border: 1px solid rgba(244, 241, 236, 0.25);
+  border-radius: 0.35rem;
+  background: transparent;
+  color: rgba(244, 241, 236, 0.85);
+  font: inherit;
+  cursor: pointer;
+}
+
+.metcon__piece-actions button,
+.metcon__time-row button,
+.metcon__rounds button {
+  min-width: 2.4rem;
+  padding: 0.4rem 0.55rem;
+}
+
+.metcon__chips button {
+  padding: 0.35rem 0.6rem;
+}
+
+.metcon__chips button.is-on {
+  border-color: var(--color-primary);
+  color: var(--color-primary);
+}
+
+.metcon__piece-actions button:disabled,
+.metcon__time-row button:disabled,
+.metcon__rounds button:disabled {
+  opacity: 0.35;
+  cursor: default;
+}
+
+.metcon__fields {
+  display: grid;
+  gap: 0.45rem;
+  margin-bottom: 0.85rem;
+}
+
+.metcon__fields label {
+  display: grid;
+  gap: 0.35rem;
+  font-size: 0.9rem;
+}
+
+.metcon__fields input,
+.metcon__fields select,
+.metcon__amount input {
+  border: 1px solid rgba(255, 255, 255, 0.14);
+  border-radius: 0.35rem;
+  padding: 0.6rem 0.7rem;
+  background: #12161b;
+  color: inherit;
+  font: inherit;
+}
+
+.metcon__amount {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  max-width: 12rem;
+}
+
+.metcon__amount input {
+  width: 6.5rem;
+}
+
+.metcon__amount span,
+.metcon__note,
+.metcon__empty,
+.metcon__repeat {
+  color: rgba(244, 241, 236, 0.62);
+}
+
+.metcon__note,
+.metcon__empty,
+.metcon__repeat,
+.metcon__fit {
+  margin: 0;
+  line-height: 1.45;
+  font-size: 0.88rem;
+}
+
+.metcon__fit.is-inside {
+  color: var(--color-primary);
+}
+
+.metcon__fit.is-faster {
+  color: #f0d48a;
+}
+
+.metcon__fit.is-slower {
+  color: #ffb4b4;
+}
+
+.metcon__time {
+  display: grid;
+  gap: 0.4rem;
+}
+
+.metcon__add {
+  margin-top: 0.85rem;
+}
+
+.metcon__result {
+  position: sticky;
+  top: 1rem;
+  padding: 1rem 1.1rem 1.15rem;
+}
+
+.metcon__result > p:first-child {
+  margin: 0;
+  font-size: 0.78rem;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: rgba(244, 241, 236, 0.55);
+}
+
+.metcon__result > strong {
+  display: block;
+  margin: 0.15rem 0 0.3rem;
+  font-size: clamp(2.4rem, 5vw, 3.4rem);
+  font-variant-numeric: tabular-nums;
+  line-height: 1;
+}
+
+.metcon__result > em {
+  display: block;
+  margin-bottom: 1rem;
+  font-style: normal;
+  color: rgba(244, 241, 236, 0.78);
+}
+
+.metcon__result h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1rem;
+}
+
+.metcon__sequence {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  display: grid;
+  gap: 0.7rem;
+}
+
+.metcon__track {
+  height: 0.35rem;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.08);
+  overflow: hidden;
+}
+
+.metcon__track span {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: var(--color-primary);
+}
+
+.metcon__sequence-copy {
+  display: grid;
+  grid-template-columns: 3.2rem 1fr;
+  gap: 0.1rem 0.55rem;
+  margin-top: 0.35rem;
+}
+
+.metcon__sequence-copy span,
+.metcon__sequence-copy em {
+  font-style: normal;
+  font-variant-numeric: tabular-nums;
+  color: rgba(244, 241, 236, 0.62);
+}
+
+.metcon__sequence-copy strong {
+  font-weight: 650;
+}
+
+.metcon__sequence-copy em {
+  grid-column: 2;
+  font-size: 0.85rem;
+}
+
+.metcon__sequence li.is-transition .metcon__track span {
+  background: rgba(244, 241, 236, 0.35);
+}
+
+.metcon__sequence li.is-transition strong {
+  font-weight: 500;
+  color: rgba(244, 241, 236, 0.72);
+}
+
+.metcon__repeat {
+  margin-top: 0.9rem;
+}
+
+@media (max-width: 860px) {
+  .metcon__layout {
+    grid-template-columns: 1fr;
+  }
+
+  .metcon__result {
+    position: static;
+    order: -1;
+  }
+}
