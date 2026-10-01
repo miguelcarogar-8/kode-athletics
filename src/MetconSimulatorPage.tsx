@@ -70,7 +70,7 @@ export function MetconSimulatorPage() {
       />
 
       <section className="wods__hero">
-        <h1>Simulador de metcons</h1>
+        <h1>Simulador de WODs</h1>
         <p>
           Elige For time o AMRAP, arma el bloque con cardio y ejercicios, arrastra cada parte para
           cambiar el orden y añade la transición entre una y otra.

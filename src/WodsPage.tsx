@@ -19,7 +19,7 @@ export function WodsPage() {
         if (!cancelled) setWods(rows)
       } catch (err) {
         if (!cancelled) {
-          setError(err instanceof Error ? err.message : 'No se pudieron cargar los metcons')
+          setError(err instanceof Error ? err.message : 'No se pudieron cargar los WODs')
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -36,7 +36,7 @@ export function WodsPage() {
         actions={
           <>
             <button type="button" className="wods__primary" onClick={() => navigate('/wods/nuevo')}>
-              Nuevo metcon
+              Nuevo WOD
             </button>
             <Link to="/" className="wods__back">
               Inicio
@@ -46,9 +46,9 @@ export function WodsPage() {
       />
 
       <section className="wods__hero">
-        <h1>Metcons y marcas</h1>
+        <h1>WODs y marcas</h1>
         <p>
-          Crea un metcon for time, AMRAP o EMOM y anota la marca cada vez que lo repitas. El tiempo
+          Crea un WOD for time, AMRAP o EMOM y anota la marca cada vez que lo repitas. El tiempo
           baja o las repeticiones suben: así ves si has mejorado.
         </p>
       </section>
@@ -59,11 +59,11 @@ export function WodsPage() {
         </p>
       ) : null}
 
-      {loading ? <p className="wods__muted">Cargando metcons…</p> : null}
+      {loading ? <p className="wods__muted">Cargando WODs…</p> : null}
 
       {!loading && !error && wods.length === 0 ? (
         <p className="wods__muted">
-          Todavía no hay metcons. Crea uno y, cada vez que lo hagas, guarda el tiempo o las
+          Todavía no hay WODs. Crea uno y, cada vez que lo hagas, guarda el tiempo o las
           repeticiones.
         </p>
       ) : null}

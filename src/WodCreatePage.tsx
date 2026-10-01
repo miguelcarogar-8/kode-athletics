@@ -36,7 +36,7 @@ export function WodCreatePage() {
     event.preventDefault()
     const trimmed = name.trim()
     if (!trimmed) {
-      setError('Ponle un nombre al metcon.')
+      setError('Ponle un nombre al WOD.')
       return
     }
     if (pieces.length === 0) {
@@ -45,7 +45,7 @@ export function WodCreatePage() {
     }
     const cleanExercises = pieces.map((piece) => prescription(piece))
     if (cleanExercises.length > 40) {
-      setError('El metcon no puede pasar de 40 movimientos.')
+      setError('El WOD no puede pasar de 40 movimientos.')
       return
     }
     const minutes = timeCapMin.trim() === '' ? null : Number(timeCapMin)
@@ -71,7 +71,7 @@ export function WodCreatePage() {
       })
       navigate(`/wods/${created.id}`)
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo guardar el metcon')
+      setError(err instanceof Error ? err.message : 'No se pudo guardar el WOD')
       setSaving(false)
     }
   }
@@ -87,7 +87,7 @@ export function WodCreatePage() {
       />
 
       <section className="wods__hero">
-        <h1>Nuevo metcon</h1>
+        <h1>Nuevo WOD</h1>
         <p>{selected.hint}</p>
       </section>
 
@@ -185,7 +185,7 @@ export function WodCreatePage() {
         </label>
 
         <button type="submit" className="wods__primary" disabled={saving}>
-          {saving ? 'Guardando…' : 'Guardar metcon'}
+          {saving ? 'Guardando…' : 'Guardar WOD'}
         </button>
       </form>
     </main>

@@ -70,7 +70,7 @@ export function WodDetailPage() {
       } catch (err) {
         if (!cancelled) {
           setWod(null)
-          setError(err instanceof Error ? err.message : 'No se pudo cargar el metcon')
+          setError(err instanceof Error ? err.message : 'No se pudo cargar el WOD')
         }
       } finally {
         if (!cancelled) setLoading(false)
@@ -175,7 +175,7 @@ export function WodDetailPage() {
       await deleteWod(wod.id)
       navigate('/wods')
     } catch (err) {
-      setError(err instanceof Error ? err.message : 'No se pudo eliminar el metcon')
+      setError(err instanceof Error ? err.message : 'No se pudo eliminar el WOD')
     }
   }
 
@@ -198,7 +198,7 @@ export function WodDetailPage() {
               </button>
             ) : null}
             <Link to="/wods" className="wods__back">
-              Metcons
+              WODs
             </Link>
           </>
         }
@@ -210,7 +210,7 @@ export function WodDetailPage() {
         </p>
       ) : null}
 
-      {!wod ? <p className="wods__muted">No se encontró el metcon.</p> : null}
+      {!wod ? <p className="wods__muted">No se encontró el WOD.</p> : null}
 
       {wod ? (
         <>
@@ -353,7 +353,7 @@ export function WodDetailPage() {
           <section className="wods__block">
             <h2>Marcas</h2>
             {wod.scores.length === 0 ? (
-              <p className="wods__muted">Todavía no hay marcas en este metcon.</p>
+              <p className="wods__muted">Todavía no hay marcas en este WOD.</p>
             ) : (
               <ul className="wods__scores">
                 {[...wod.scores].reverse().map((score) => (

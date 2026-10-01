@@ -115,7 +115,7 @@ interface ScoreRow {
 }
 
 const MISSING_TABLE =
-  'Faltan las tablas de metcons en Supabase. Ejecuta supabase/schema.sql en el editor SQL del proyecto.'
+  'Faltan las tablas de WODs en Supabase. Ejecuta supabase/schema.sql en el editor SQL del proyecto.'
 
 export function formatWodKind(type: WodType, timeCapSec: number | null, roundCount = 1): string {
   const minutes = timeCapSec == null ? null : Math.round(timeCapSec / 60)
@@ -175,7 +175,7 @@ export async function getWod(id: string): Promise<WodDetail> {
 export async function createWod(input: CreateWodInput): Promise<WodDetail> {
   const userId = await currentUserId()
   const name = input.name.trim()
-  if (!name || name.length > 80) throw new Error('Ponle un nombre al metcon.')
+  if (!name || name.length > 80) throw new Error('Ponle un nombre al WOD.')
   const exercises = input.exercises.map((exercise, index) => {
     const exerciseName = exercise.name.trim()
     const reps = exercise.reps.trim()
@@ -189,7 +189,7 @@ export async function createWod(input: CreateWodInput): Promise<WodDetail> {
     return { position: index, round, name: exerciseName, reps }
   })
   if (exercises.length < 1 || exercises.length > 40) {
-    throw new Error('El metcon necesita entre 1 y 40 movimientos.')
+    throw new Error('El WOD necesita entre 1 y 40 movimientos.')
   }
   const rounds = input.type === 'for_time' ? (input.rounds ?? 1) : 1
   if (!Number.isInteger(rounds) || rounds < 1 || rounds > 30) {
@@ -242,7 +242,7 @@ export async function deleteWod(id: string): Promise<void> {
   const removed = await client().from('wods').delete().eq('id', id).select('id')
   assertOk(removed.error)
   if (!Array.isArray(removed.data) || removed.data.length === 0) {
-    throw new Error('No se encontró el metcon.')
+    throw new Error('No se encontró el WOD.')
   }
 }
 
@@ -251,12 +251,12 @@ export async function addWodScore(id: string, input: CreateWodScoreInput): Promi
   const existing = await client().from('wods').select('id, type').eq('id', id).maybeSingle()
   assertOk(existing.error)
   const wod = existing.data as { id: string; type: WodType } | null
-  if (!wod) throw new Error('No se encontró el metcon.')
+  if (!wod) throw new Error('No se encontró el WOD.')
 
   const performedAt = assertDate(input.performedAt)
   const score = { elapsed_sec: null as number | null, rounds: null as number | null, reps: null as number | null }
   if (wod.type === 'for_time') {
-    if (input.elapsedSec == null) throw new Error('Indica el tiempo del metcon.')
+    if (input.elapsedSec == null) throw new Error('Indica el tiempo del WOD.')
     score.elapsed_sec = input.elapsedSec
   } else if (wod.type === 'amrap') {
     if (input.rounds == null) throw new Error('Indica las rondas.')
@@ -300,7 +300,7 @@ async function detail(id: string): Promise<WodDetail> {
     .maybeSingle()
   assertOk(wodQuery.error)
   const wod = wodQuery.data as WodRow | null
-  if (!wod) throw new Error('No se encontró el metcon.')
+  if (!wod) throw new Error('No se encontró el WOD.')
 
   const [exercises, scores] = await Promise.all([
     client()
@@ -394,7 +394,7 @@ function assertOk(error: { message: string; code?: string } | null): void {
     /does not exist/i.test(error.message)
   if (missing) throw new Error(MISSING_TABLE)
   if (/row-level security/i.test(error.message)) {
-    throw new Error('No tienes permiso para guardar este metcon.')
+    throw new Error('No tienes permiso para guardar este WOD.')
   }
   throw new Error(error.message)
 }

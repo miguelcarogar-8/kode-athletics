@@ -1,4 +1,4 @@
--- Metcons y marcas por usuario. Ejecutar una vez en el editor SQL de Supabase.
+-- WODs y marcas por usuario. Ejecutar una vez en el editor SQL de Supabase.
 -- El login ya usa Auth; estas tablas guardan solo lo de cada cuenta.
 
 create table if not exists public.wods (

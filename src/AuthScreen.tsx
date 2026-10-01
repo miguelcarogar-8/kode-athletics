@@ -95,8 +95,8 @@ export function AuthScreen({ initialNotice = null }: { initialNotice?: string | 
       </p>
 
       <section className="auth__card">
-        <h1>Simulador de metcons</h1>
-        <p>Entra con tu email para usarlo.</p>
+        <h1>Empieza a utilizar Kode Athletics</h1>
+        <p>Entra con tu email para simular un WOD o anotar tus marcas.</p>
 
         <div className="auth__modes">
           <button
