@@ -1,3 +1,4 @@
+import { normalizeWeightKg } from './metconSim'
 import { supabase } from './supabase'
 import { annotateScores, type WodType } from './wodScore'
 
@@ -26,6 +27,7 @@ export interface WodExercise {
   name: string
   reps: string
   round: number
+  weightKg: number | null
 }
 
 export interface WodScore {
@@ -74,7 +76,7 @@ export interface CreateWodInput {
   timeCapMin?: number
   notes?: string
   rounds?: number
-  exercises: { name: string; reps: string; round?: number }[]
+  exercises: { name: string; reps: string; round?: number; weightKg?: number | null }[]
 }
 
 export interface CreateWodScoreInput {
@@ -102,6 +104,7 @@ interface ExerciseRow {
   round: number
   name: string
   reps: string
+  weight_kg: number | string | null
 }
 
 interface ScoreRow {
@@ -186,7 +189,11 @@ export async function createWod(input: CreateWodInput): Promise<WodDetail> {
     if (!Number.isInteger(round) || round < 1 || round > 30) {
       throw new Error('La ronda tiene que estar entre 1 y 30.')
     }
-    return { position: index, round, name: exerciseName, reps }
+    const weightKg = exercise.weightKg == null ? null : normalizeWeightKg(exercise.weightKg)
+    if (exercise.weightKg != null && weightKg == null) {
+      throw new Error('El peso tiene que estar entre 1 y 300 kg.')
+    }
+    return { position: index, round, name: exerciseName, reps, weightKg }
   })
   if (exercises.length < 1 || exercises.length > 40) {
     throw new Error('El WOD necesita entre 1 y 40 movimientos.')
@@ -229,6 +236,7 @@ export async function createWod(input: CreateWodInput): Promise<WodDetail> {
         round: exercise.round,
         name: exercise.name,
         reps: exercise.reps,
+        weight_kg: exercise.weightKg,
       })),
     )
   if (savedExercises.error) {
@@ -305,7 +313,7 @@ async function detail(id: string): Promise<WodDetail> {
   const [exercises, scores] = await Promise.all([
     client()
       .from('wod_exercises')
-      .select('id, wod_id, position, round, name, reps')
+      .select('id, wod_id, position, round, name, reps, weight_kg')
       .eq('wod_id', id)
       .order('round', { ascending: true })
       .order('position', { ascending: true }),
@@ -338,6 +346,7 @@ async function detail(id: string): Promise<WodDetail> {
       name: exercise.name,
       reps: exercise.reps,
       round: Number(exercise.round ?? 1),
+      weightKg: readWeightKg(exercise.weight_kg),
     })),
     scores: annotated.items.map((item) => ({
       id: Number(item.score.id),
@@ -408,6 +417,11 @@ function blockRounds(stored: number | null | undefined, rows: { round?: number }
 
 function asRows<T>(data: unknown): T[] {
   return Array.isArray(data) ? (data as T[]) : []
+}
+
+function readWeightKg(value: number | string | null | undefined): number | null {
+  if (value == null || value === '') return null
+  return normalizeWeightKg(typeof value === 'number' ? value : Number(value))
 }
 
 function cleanNotes(value: string | null | undefined): string | null {

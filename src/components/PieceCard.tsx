@@ -8,9 +8,11 @@ import {
   exerciseDef,
   exerciseSeconds,
   formatClock,
+  formatKg,
   formatRange,
   formatRepSeconds,
   paceFit,
+  parseWeightKg,
   paceFromSeconds,
   pieceLabel,
   piecePace,
@@ -26,6 +28,7 @@ import {
 import '../MetconSimulatorPage.css'
 
 const REP_PRESETS = [5, 10, 15, 21, 30]
+const WEIGHT_PRESETS = [20, 24, 40, 60]
 const CALORIE_PRESETS = [10, 15, 20, 30]
 const DISTANCE_PRESETS = [200, 400, 800, 1000]
 
@@ -55,6 +58,7 @@ export function createExercise(): ExercisePiece {
     kind: 'exercise',
     exerciseId: 'thruster',
     reps,
+    weightKg: null,
     paceMode,
     seconds: exerciseSeconds('thruster', reps, paceMode),
     transitionAfterSec: null,
@@ -542,6 +546,28 @@ function ExerciseFields({
         ))}
       </div>
       <AmountField key={piece.reps} value={piece.reps} min={1} max={500} suffix="reps" onCommit={setReps} />
+      <span>Peso</span>
+      <div className="metcon__chips">
+        <button
+          type="button"
+          className={piece.weightKg == null ? 'is-on' : undefined}
+          onClick={() => onChange({ ...piece, weightKg: null })}
+        >
+          Sin peso
+        </button>
+        {WEIGHT_PRESETS.map((kg) => (
+          <button
+            key={kg}
+            type="button"
+            className={kg === piece.weightKg ? 'is-on' : undefined}
+            onClick={() => onChange({ ...piece, weightKg: kg })}
+          >
+            {kg} kg
+          </button>
+        ))}
+      </div>
+      <WeightField key={piece.weightKg ?? 'empty'} value={piece.weightKg} onCommit={(weightKg) => onChange({ ...piece, weightKg })} />
+      <p className="metcon__note">En kilogramos. Déjalo vacío si el ejercicio no lleva peso.</p>
       {timing && fit ? (
         <p className={`metcon__fit is-${fit}`}>
           Ahora {formatRepSeconds(perRep)} s/rep. {fitLabel(fit, piece.paceMode)}
@@ -556,6 +582,50 @@ function fitLabel(fit: 'inside' | 'faster' | 'slower', mode: PaceMode): string {
   if (fit === 'inside') return `Dentro del ${band}.`
   if (fit === 'faster') return `Más rápido que el ${band}.`
   return `Más lento que el ${band}.`
+}
+
+function WeightField({
+  value,
+  onCommit,
+}: {
+  value: number | null
+  onCommit: (value: number | null) => void
+}) {
+  const [text, setText] = useState(value == null ? '' : formatKg(value).replace(' kg', ''))
+
+  const commit = () => {
+    if (text.trim() === '') {
+      onCommit(null)
+      setText('')
+      return
+    }
+    const parsed = parseWeightKg(text)
+    if (parsed == null) {
+      setText(value == null ? '' : formatKg(value).replace(' kg', ''))
+      return
+    }
+    onCommit(parsed)
+  }
+
+  return (
+    <label className="metcon__amount">
+      <input
+        value={text}
+        inputMode="decimal"
+        aria-label="Peso en kilogramos"
+        placeholder="—"
+        onChange={(event) => setText(event.target.value)}
+        onBlur={commit}
+        onKeyDown={(event) => {
+          if (event.key === 'Enter') {
+            event.preventDefault()
+            event.currentTarget.blur()
+          }
+        }}
+      />
+      <span>kg</span>
+    </label>
+  )
 }
 
 function AmountField({

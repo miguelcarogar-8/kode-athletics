@@ -5,7 +5,9 @@ import {
   exampleMetcon,
   exerciseDef,
   formatClock,
+  formatKg,
   formatRange,
+  parseWeightKg,
   paceFit,
   paceFromSeconds,
   pieceLabel,
@@ -75,6 +77,12 @@ const pullups = example.pieces[2]
 assert.ok(pullups && pullups.kind === 'exercise')
 assert.equal(piecePace(pullups), '1,3 s/rep')
 assert.equal(pieceLabel(pullups), '12 Pull-ups kipping')
+assert.equal(pieceLabel({ ...pullups, weightKg: 43 }), '12 Pull-ups kipping · 43 kg')
+assert.equal(pieceLabel({ ...pullups, weightKg: 22.5 }), '12 Pull-ups kipping · 22,5 kg')
+assert.equal(formatKg(60), '60 kg')
+assert.equal(parseWeightKg('22,5'), 22.5)
+assert.equal(parseWeightKg('0,5'), null)
+assert.equal(parseWeightKg('301'), null)
 
 const calories = {
   id: 'row',

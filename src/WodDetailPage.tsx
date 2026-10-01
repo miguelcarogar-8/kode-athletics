@@ -1,6 +1,7 @@
 import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AppHeader } from './AppHeader'
+import { formatKg } from './metconSim'
 import {
   addWodScore,
   deleteWod,
@@ -229,7 +230,10 @@ export function WodDetailPage() {
                 {round.exercises.map((exercise) => (
                   <li key={exercise.id}>
                     <strong>{exercise.name}</strong>
-                    <span>{exercise.reps}</span>
+                    <span>
+                      {exercise.reps}
+                      {exercise.weightKg != null ? ` · ${formatKg(exercise.weightKg)}` : ''}
+                    </span>
                   </li>
                 ))}
               </ol>

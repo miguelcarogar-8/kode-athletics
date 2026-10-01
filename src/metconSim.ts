@@ -78,6 +78,7 @@ export interface ExercisePiece {
   kind: 'exercise'
   exerciseId: string
   reps: number
+  weightKg: number | null
   paceMode: PaceMode
   seconds: number
   transitionAfterSec: number | null
@@ -222,12 +223,37 @@ export function emptyMetcon(): MetconDraft {
   }
 }
 
+const MIN_WEIGHT_KG = 1
+const MAX_WEIGHT_KG = 300
+
+export function normalizeWeightKg(value: number | null | undefined): number | null {
+  if (value == null || !Number.isFinite(value)) return null
+  const rounded = Math.round(value * 10) / 10
+  if (rounded < MIN_WEIGHT_KG || rounded > MAX_WEIGHT_KG) return null
+  return rounded
+}
+
+export function parseWeightKg(text: string): number | null {
+  const normalized = text.trim().replace(',', '.')
+  if (!/^\d{1,3}(\.\d)?$/.test(normalized)) return null
+  return normalizeWeightKg(Number(normalized))
+}
+
+export function formatKg(kg: number): string {
+  const rounded = Math.round(kg * 10) / 10
+  const text = Number.isInteger(rounded)
+    ? String(rounded)
+    : rounded.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
+  return `${text} kg`
+}
+
 export function pieceLabel(piece: MetconPiece): string {
   if (piece.kind === 'cardio') {
     if (piece.mode === 'cal') return `${piece.calories} cal ${cardioLabel(piece.cardio)}`
     return `${piece.distanceM} m ${cardioLabel(piece.cardio)}`
   }
-  return `${piece.reps} ${exerciseDef(piece.exerciseId).name}`
+  const name = `${piece.reps} ${exerciseDef(piece.exerciseId).name}`
+  return piece.weightKg == null ? name : `${name} · ${formatKg(piece.weightKg)}`
 }
 
 export function piecePace(piece: MetconPiece): string | null {
@@ -366,7 +392,8 @@ function partialPieceLabel(piece: MetconPiece, usedSec: number): string | null {
   if (piece.kind === 'exercise') {
     const reps = Math.floor((piece.reps * usedSec) / seconds)
     if (reps <= 0) return null
-    return `${reps} ${exerciseDef(piece.exerciseId).name}`
+    const name = `${reps} ${exerciseDef(piece.exerciseId).name}`
+    return piece.weightKg == null ? name : `${name} · ${formatKg(piece.weightKg)}`
   }
   if (piece.mode === 'distance') {
     const meters = Math.floor((piece.distanceM * usedSec) / seconds)
@@ -409,6 +436,7 @@ export function exampleMetcon(): MetconDraft {
         kind: 'exercise',
         exerciseId: 'thruster',
         reps: 21,
+        weightKg: null,
         paceMode: 'pacing',
         seconds: exerciseSeconds('thruster', 21, 'pacing'),
         transitionAfterSec: null,
@@ -418,6 +446,7 @@ export function exampleMetcon(): MetconDraft {
         kind: 'exercise',
         exerciseId: 'pullup-kipping',
         reps: 12,
+        weightKg: null,
         paceMode: 'pacing',
         seconds: exerciseSeconds('pullup-kipping', 12, 'pacing'),
         transitionAfterSec: null,

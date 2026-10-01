@@ -72,3 +72,8 @@ alter table public.wods add constraint wods_rounds_check check (rounds between 1
 alter table public.wod_exercises add column if not exists round integer not null default 1;
 alter table public.wod_exercises drop constraint if exists wod_exercises_round_check;
 alter table public.wod_exercises add constraint wod_exercises_round_check check (round between 1 and 30);
+
+alter table public.wod_exercises add column if not exists weight_kg numeric(5, 1);
+alter table public.wod_exercises drop constraint if exists wod_exercises_weight_kg_check;
+alter table public.wod_exercises add constraint wod_exercises_weight_kg_check
+  check (weight_kg is null or (weight_kg >= 1 and weight_kg <= 300));
