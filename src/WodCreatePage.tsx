@@ -8,7 +8,8 @@ import { createWod, saveWodLevels, WOD_TYPES, type WodType } from './wodsApi'
 
 function prescription(piece: MetconPiece): { name: string; reps: string; weightKg: number | null } {
   if (piece.kind === 'exercise') {
-    return { name: exerciseDef(piece.exerciseId).name, reps: String(piece.reps), weightKg: piece.weightKg }
+    const reps = piece.unit === 'meters' ? `${piece.reps} m` : String(piece.reps)
+    return { name: exerciseDef(piece.exerciseId).name, reps, weightKg: piece.weightKg }
   }
   const label = CARDIO.find((item) => item.id === piece.cardio)?.label ?? 'Cardio'
   const reps = piece.mode === 'cal' ? `${piece.calories} cal` : `${piece.distanceM} m`

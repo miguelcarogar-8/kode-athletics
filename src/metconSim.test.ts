@@ -16,6 +16,7 @@ import {
   secondsForReps,
   secondsFromPace,
   simulate,
+  type ExercisePiece,
 } from './metconSim.ts'
 
 assert.equal(CARDIO.length, 5)
@@ -23,7 +24,7 @@ assert.deepEqual(
   CARDIO.map((item) => item.id),
   ['run', 'bikerg', 'skierg', 'rowerg', 'assault'],
 )
-assert.equal(EXERCISES.length, 24)
+assert.equal(EXERCISES.length, 25)
 
 const thruster = exerciseDef('thruster')
 assert.equal(secondsForReps(thruster, 'pacing', 21), 58)
@@ -33,6 +34,28 @@ assert.equal(formatRange(thruster.sprint), '2,0 s/rep')
 assert.equal(paceFit(thruster, 'pacing', 58, 21), 'inside')
 assert.equal(paceFit(thruster, 'pacing', 40, 21), 'faster')
 assert.equal(paceFit(thruster, 'pacing', 80, 21), 'slower')
+
+const farmer = exerciseDef('farmer-carry')
+assert.equal(secondsForReps(farmer, 'pacing', 20, 'meters'), 30)
+assert.equal(secondsForReps(farmer, 'sprint', 20, 'meters'), 17)
+assert.equal(formatRange(farmer.meterPacing ?? farmer.pacing, 'meters'), '1,2–1,8 s/m')
+const farmerPiece: ExercisePiece = {
+  id: 'farmer',
+  kind: 'exercise',
+  exerciseId: 'farmer-carry',
+  reps: 20,
+  unit: 'meters',
+  weightKg: 24,
+  paceMode: 'pacing',
+  seconds: 30,
+  transitionAfterSec: null,
+}
+assert.equal(pieceLabel(farmerPiece), '20 m Farmer carry · 24 kg')
+assert.equal(piecePace(farmerPiece), '1,5 s/m')
+
+const lunge = exerciseDef('lunge')
+assert.equal(secondsForReps(lunge, 'pacing', 10), 17)
+assert.equal(secondsForReps(lunge, 'pacing', 20, 'meters'), 33)
 
 const example = exampleMetcon()
 const result = simulate(example.rounds, example.pieces)

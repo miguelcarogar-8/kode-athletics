@@ -36,6 +36,17 @@ const heavy = estimateCatalog({
 })
 assert.ok((heavy.intermediate.elapsedSec ?? 0) > (light.intermediate.elapsedSec ?? 0))
 
+const carry = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Farmer carry', reps: '20 m', weightKg: 24 }],
+})
+assert.equal(carry.scaled.elapsedSec, 36)
+assert.equal(carry.intermediate.elapsedSec, 30)
+assert.equal(carry.rx.elapsedSec, 17)
+assert.equal(carry.confidence, 'high')
+
 const unknown = estimateCatalog({
   type: 'for_time',
   rounds: 1,

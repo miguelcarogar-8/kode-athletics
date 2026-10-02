@@ -7,11 +7,13 @@ import {
   clampSeconds,
   exerciseDef,
   exerciseSeconds,
+  exerciseUnits,
   formatClock,
   formatKg,
   formatRange,
   formatRepSeconds,
   paceFit,
+  workRange,
   parseWeightKg,
   paceFromSeconds,
   pieceLabel,
@@ -24,10 +26,12 @@ import {
   type ExercisePiece,
   type MetconPiece,
   type PaceMode,
+  type WorkUnit,
 } from '../metconSim'
 import '../MetconSimulatorPage.css'
 
 const REP_PRESETS = [5, 10, 15, 21, 30]
+const METER_PRESETS = [10, 15, 20, 30, 40]
 const WEIGHT_PRESETS = [20, 24, 40, 60]
 const CALORIE_PRESETS = [10, 15, 20, 30]
 const DISTANCE_PRESETS = [200, 400, 800, 1000]
@@ -58,6 +62,7 @@ export function createExercise(): ExercisePiece {
     kind: 'exercise',
     exerciseId: 'thruster',
     reps,
+    unit: 'reps',
     weightKg: null,
     paceMode,
     seconds: exerciseSeconds('thruster', reps, paceMode),
@@ -465,30 +470,49 @@ function ExerciseFields({
   timing: boolean
 }) {
   const def = exerciseDef(piece.exerciseId)
-  const fit = timing ? paceFit(def, piece.paceMode, piece.seconds, piece.reps) : null
-  const perRep = piece.reps > 0 ? piece.seconds / piece.reps : 0
+  const units = exerciseUnits(def)
+  const unit = units.includes(piece.unit) ? piece.unit : units[0]
+  const fit = timing ? paceFit(def, piece.paceMode, piece.seconds, piece.reps, unit) : null
+  const perUnit = piece.reps > 0 ? piece.seconds / piece.reps : 0
 
-  const setReps = (reps: number) => {
+  const setAmount = (reps: number) => {
     onChange({
       ...piece,
+      unit,
       reps,
       seconds: scaledSeconds(piece.seconds, piece.reps, reps),
+    })
+  }
+
+  const setUnit = (nextUnit: WorkUnit) => {
+    const amount = nextUnit === 'meters' && unit !== 'meters' ? 20 : piece.reps
+    onChange({
+      ...piece,
+      unit: nextUnit,
+      reps: amount,
+      seconds: exerciseSeconds(piece.exerciseId, amount, piece.paceMode, nextUnit),
     })
   }
 
   const setPaceMode = (paceMode: PaceMode) => {
     onChange({
       ...piece,
+      unit,
       paceMode,
-      seconds: exerciseSeconds(piece.exerciseId, piece.reps, paceMode),
+      seconds: exerciseSeconds(piece.exerciseId, piece.reps, paceMode, unit),
     })
   }
 
   const setExercise = (exerciseId: string) => {
+    const nextUnits = exerciseUnits(exerciseDef(exerciseId))
+    const nextUnit = nextUnits.includes(piece.unit) ? piece.unit : nextUnits[0]
+    const amount = nextUnit === 'meters' && piece.unit !== 'meters' ? 20 : piece.reps
     onChange({
       ...piece,
       exerciseId,
-      seconds: exerciseSeconds(exerciseId, piece.reps, piece.paceMode),
+      unit: nextUnit,
+      reps: amount,
+      seconds: exerciseSeconds(exerciseId, amount, piece.paceMode, nextUnit),
     })
   }
 
@@ -527,25 +551,43 @@ function ExerciseFields({
             </button>
           </div>
           <p className="metcon__note">
-            Ritmo medio {formatRange(def.pacing)}. Sprint {formatRange(def.sprint)}.
+            Ritmo medio {formatRange(workRange(def, 'pacing', unit), unit)}. Sprint {formatRange(workRange(def, 'sprint', unit), unit)}.
           </p>
         </>
       ) : null}
       {def.unitNote ? <p className="metcon__note">{def.unitNote}</p> : null}
-      <span>Repeticiones</span>
+      {units.length > 1 ? (
+        <div className="metcon__chips">
+          <button type="button" className={unit === 'reps' ? 'is-on' : undefined} onClick={() => setUnit('reps')}>
+            Repeticiones
+          </button>
+          <button type="button" className={unit === 'meters' ? 'is-on' : undefined} onClick={() => setUnit('meters')}>
+            Metros
+          </button>
+        </div>
+      ) : (
+        <span>{unit === 'meters' ? 'Metros' : 'Repeticiones'}</span>
+      )}
       <div className="metcon__chips">
-        {REP_PRESETS.map((reps) => (
+        {(unit === 'meters' ? METER_PRESETS : REP_PRESETS).map((amount) => (
           <button
-            key={reps}
+            key={amount}
             type="button"
-            className={reps === piece.reps ? 'is-on' : undefined}
-            onClick={() => setReps(reps)}
+            className={amount === piece.reps ? 'is-on' : undefined}
+            onClick={() => setAmount(amount)}
           >
-            {reps}
+            {unit === 'meters' ? `${amount} m` : amount}
           </button>
         ))}
       </div>
-      <AmountField key={piece.reps} value={piece.reps} min={1} max={500} suffix="reps" onCommit={setReps} />
+      <AmountField
+        key={`${unit}-${piece.reps}`}
+        value={piece.reps}
+        min={1}
+        max={unit === 'meters' ? 400 : 500}
+        suffix={unit === 'meters' ? 'm' : 'reps'}
+        onCommit={setAmount}
+      />
       <span>Peso</span>
       <div className="metcon__chips">
         <button
@@ -570,7 +612,7 @@ function ExerciseFields({
       <p className="metcon__note">En kilogramos. Déjalo vacío si el ejercicio no lleva peso.</p>
       {timing && fit ? (
         <p className={`metcon__fit is-${fit}`}>
-          Ahora {formatRepSeconds(perRep)} s/rep. {fitLabel(fit, piece.paceMode)}
+          Ahora {formatRepSeconds(perUnit)} {unit === 'meters' ? 's/m' : 's/rep'}. {fitLabel(fit, piece.paceMode)}
         </p>
       ) : null}
     </div>

@@ -17,6 +17,7 @@ export const EXERCISE_GROUPS = [
 
 export type ExerciseGroup = (typeof EXERCISE_GROUPS)[number]['id']
 export type PaceMode = 'pacing' | 'sprint'
+export type WorkUnit = 'reps' | 'meters'
 
 export interface RepRange {
   min: number
@@ -29,6 +30,9 @@ export interface ExerciseDef {
   group: ExerciseGroup
   pacing: RepRange
   sprint: RepRange
+  meterPacing?: RepRange
+  meterSprint?: RepRange
+  units?: WorkUnit[]
   unitNote?: string
 }
 
@@ -52,7 +56,8 @@ export const EXERCISES: ExerciseDef[] = [
   { id: 'burpee', name: 'Burpees', group: 'otros', pacing: { min: 3, max: 4 }, sprint: { min: 2, max: 2.5 } },
   { id: 'burpee-bar', name: 'Burpees over the bar', group: 'otros', pacing: { min: 3.5, max: 4.5 }, sprint: { min: 2.5, max: 3 } },
   { id: 'wall-ball', name: 'Wall balls', group: 'otros', pacing: { min: 2.2, max: 2.6 }, sprint: { min: 1.8, max: 2 } },
-  { id: 'lunge', name: 'Zancadas', group: 'otros', pacing: { min: 1.5, max: 1.8 }, sprint: { min: 1, max: 1.2 }, unitNote: 'Cada repetición es una pierna.' },
+  { id: 'lunge', name: 'Zancadas', group: 'otros', pacing: { min: 1.5, max: 1.8 }, sprint: { min: 1, max: 1.2 }, meterPacing: { min: 1.5, max: 1.8 }, meterSprint: { min: 1, max: 1.2 }, units: ['reps', 'meters'], unitNote: 'En repeticiones, cada una es una pierna. En metros, el tiempo es por metro.' },
+  { id: 'farmer-carry', name: 'Farmer carry', group: 'otros', pacing: { min: 1.2, max: 1.8 }, sprint: { min: 0.7, max: 1 }, meterPacing: { min: 1.2, max: 1.8 }, meterSprint: { min: 0.7, max: 1 }, units: ['meters'], unitNote: 'El tiempo es por metro. El peso es por mano.' },
   { id: 'box-jump', name: 'Box jumps', group: 'otros', pacing: { min: 2.5, max: 3.5 }, sprint: { min: 1.8, max: 2 }, unitNote: 'El sprint cuenta el rebote.' },
   { id: 'kettlebell', name: 'Kettlebell swings', group: 'otros', pacing: { min: 2, max: 2.5 }, sprint: { min: 1.6, max: 1.8 } },
   { id: 'double-under', name: 'Double unders', group: 'otros', pacing: { min: 0.6, max: 0.7 }, sprint: { min: 0.4, max: 0.5 } },
@@ -78,6 +83,7 @@ export interface ExercisePiece {
   kind: 'exercise'
   exerciseId: string
   reps: number
+  unit: WorkUnit
   weightKg: number | null
   paceMode: PaceMode
   seconds: number
@@ -135,18 +141,30 @@ export function rangeMid(range: RepRange): number {
   return (range.min + range.max) / 2
 }
 
-export function secondsForReps(def: ExerciseDef, mode: PaceMode, reps: number): number {
-  const range = mode === 'sprint' ? def.sprint : def.pacing
-  return clampSeconds(rangeMid(range) * Math.max(0, reps))
+export function exerciseUnits(def: ExerciseDef): WorkUnit[] {
+  return def.units ?? ['reps']
+}
+
+export function workRange(def: ExerciseDef, mode: PaceMode, unit: WorkUnit): RepRange {
+  if (unit === 'meters') {
+    const meters = mode === 'sprint' ? def.meterSprint : def.meterPacing
+    if (meters) return meters
+  }
+  return mode === 'sprint' ? def.sprint : def.pacing
+}
+
+export function secondsForReps(def: ExerciseDef, mode: PaceMode, reps: number, unit: WorkUnit = 'reps'): number {
+  return clampSeconds(rangeMid(workRange(def, mode, unit)) * Math.max(0, reps))
 }
 
 export function formatRepSeconds(value: number): string {
   return value.toLocaleString('es-ES', { minimumFractionDigits: 1, maximumFractionDigits: 1 })
 }
 
-export function formatRange(range: RepRange): string {
-  if (range.min === range.max) return `${formatRepSeconds(range.min)} s/rep`
-  return `${formatRepSeconds(range.min)}–${formatRepSeconds(range.max)} s/rep`
+export function formatRange(range: RepRange, unit: WorkUnit = 'reps'): string {
+  const suffix = unit === 'meters' ? 's/m' : 's/rep'
+  if (range.min === range.max) return `${formatRepSeconds(range.min)} ${suffix}`
+  return `${formatRepSeconds(range.min)}–${formatRepSeconds(range.max)} ${suffix}`
 }
 
 export function paceFit(
@@ -154,10 +172,11 @@ export function paceFit(
   mode: PaceMode,
   seconds: number,
   reps: number,
+  unit: WorkUnit = 'reps',
 ): PaceFit | null {
   if (reps <= 0 || seconds < 0) return null
   const perRep = seconds / reps
-  const range = mode === 'sprint' ? def.sprint : def.pacing
+  const range = workRange(def, mode, unit)
   if (perRep < range.min - 0.05) return 'faster'
   if (perRep > range.max + 0.05) return 'slower'
   return 'inside'
@@ -252,7 +271,8 @@ export function pieceLabel(piece: MetconPiece): string {
     if (piece.mode === 'cal') return `${piece.calories} cal ${cardioLabel(piece.cardio)}`
     return `${piece.distanceM} m ${cardioLabel(piece.cardio)}`
   }
-  const name = `${piece.reps} ${exerciseDef(piece.exerciseId).name}`
+  const def = exerciseDef(piece.exerciseId)
+  const name = piece.unit === 'meters' ? `${piece.reps} m ${def.name}` : `${piece.reps} ${def.name}`
   return piece.weightKg == null ? name : `${name} · ${formatKg(piece.weightKg)}`
 }
 
@@ -269,7 +289,8 @@ export function piecePace(piece: MetconPiece): string | null {
   }
   if (piece.reps <= 0) return null
   const perRep = piece.seconds / piece.reps
-  return `${perRep.toLocaleString('es-ES', { maximumFractionDigits: 1 })} s/rep`
+  const suffix = piece.unit === 'meters' ? 's/m' : 's/rep'
+  return `${perRep.toLocaleString('es-ES', { maximumFractionDigits: 1 })} ${suffix}`
 }
 
 export function simulate(
@@ -392,7 +413,8 @@ function partialPieceLabel(piece: MetconPiece, usedSec: number): string | null {
   if (piece.kind === 'exercise') {
     const reps = Math.floor((piece.reps * usedSec) / seconds)
     if (reps <= 0) return null
-    const name = `${reps} ${exerciseDef(piece.exerciseId).name}`
+    const def = exerciseDef(piece.exerciseId)
+    const name = piece.unit === 'meters' ? `${reps} m ${def.name}` : `${reps} ${def.name}`
     return piece.weightKg == null ? name : `${name} · ${formatKg(piece.weightKg)}`
   }
   if (piece.mode === 'distance') {
@@ -410,8 +432,8 @@ function gapSeconds(piece: MetconPiece | undefined): number {
   return clampSeconds(piece.transitionAfterSec)
 }
 
-export function exerciseSeconds(exerciseId: string, reps: number, paceMode: PaceMode): number {
-  return secondsForReps(exerciseDef(exerciseId), paceMode, reps)
+export function exerciseSeconds(exerciseId: string, reps: number, paceMode: PaceMode, unit: WorkUnit = 'reps'): number {
+  return secondsForReps(exerciseDef(exerciseId), paceMode, reps, unit)
 }
 
 export function exampleMetcon(): MetconDraft {
@@ -436,6 +458,7 @@ export function exampleMetcon(): MetconDraft {
         kind: 'exercise',
         exerciseId: 'thruster',
         reps: 21,
+        unit: 'reps',
         weightKg: null,
         paceMode: 'pacing',
         seconds: exerciseSeconds('thruster', 21, 'pacing'),
@@ -446,6 +469,7 @@ export function exampleMetcon(): MetconDraft {
         kind: 'exercise',
         exerciseId: 'pullup-kipping',
         reps: 12,
+        unit: 'reps',
         weightKg: null,
         paceMode: 'pacing',
         seconds: exerciseSeconds('pullup-kipping', 12, 'pacing'),

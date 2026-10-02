@@ -1,4 +1,4 @@
-import { CARDIO, EXERCISES, type CardioId, type ExerciseDef } from './metconSim.ts'
+import { CARDIO, EXERCISES, exerciseUnits, workRange, type CardioId, type ExerciseDef } from './metconSim.ts'
 import { compareValue, formatScoreLabel, repsPerRound, type WodScoreSnapshot, type WodType } from './wodScore.ts'
 
 export type LevelId = 'scaled' | 'intermediate' | 'rx'
@@ -67,6 +67,7 @@ const REFERENCE_KG: Record<string, number> = {
   'db-snatch': 22.5,
   'wall-ball': 9,
   kettlebell: 24,
+  'farmer-carry': 24,
 }
 
 const DISTANCE_PACE: Record<CardioId, Record<LevelId, number>> = {
@@ -89,6 +90,18 @@ const REP_SEC: Record<LevelId, (def: ExerciseDef) => number> = {
   scaled: (def) => def.pacing.max,
   intermediate: (def) => (def.pacing.min + def.pacing.max) / 2,
   rx: (def) => (def.sprint.min + def.sprint.max) / 2,
+}
+
+const METER_SEC: Record<LevelId, (def: ExerciseDef) => number> = {
+  scaled: (def) => workRange(def, 'pacing', 'meters').max,
+  intermediate: (def) => {
+    const range = workRange(def, 'pacing', 'meters')
+    return (range.min + range.max) / 2
+  },
+  rx: (def) => {
+    const range = workRange(def, 'sprint', 'meters')
+    return (range.min + range.max) / 2
+  },
 }
 
 interface BuiltPiece {
@@ -354,7 +367,13 @@ function buildPiece(exercise: LevelExerciseInput): BuiltPiece {
   let known = false
   let numericReps: number | null = null
 
-  if (movement && amount.reps != null) {
+  if (movement && amount.meters != null && exerciseUnits(movement).includes('meters')) {
+    known = true
+    const factor = loadFactor(movement.id, weight)
+    for (const level of LEVELS) {
+      seconds[level.id] = Math.max(1, Math.round(METER_SEC[level.id](movement) * amount.meters * factor))
+    }
+  } else if (movement && amount.reps != null) {
     known = true
     numericReps = amount.reps
     const factor = loadFactor(movement.id, weight)

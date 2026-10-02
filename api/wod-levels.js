@@ -282,7 +282,39 @@ var EXERCISES = [
 			min: 1,
 			max: 1.2
 		},
-		unitNote: "Cada repetición es una pierna."
+		meterPacing: {
+			min: 1.5,
+			max: 1.8
+		},
+		meterSprint: {
+			min: 1,
+			max: 1.2
+		},
+		units: ["reps", "meters"],
+		unitNote: "En repeticiones, cada una es una pierna. En metros, el tiempo es por metro."
+	},
+	{
+		id: "farmer-carry",
+		name: "Farmer carry",
+		group: "otros",
+		pacing: {
+			min: 1.2,
+			max: 1.8
+		},
+		sprint: {
+			min: .7,
+			max: 1
+		},
+		meterPacing: {
+			min: 1.2,
+			max: 1.8
+		},
+		meterSprint: {
+			min: .7,
+			max: 1
+		},
+		units: ["meters"],
+		unitNote: "El tiempo es por metro. El peso es por mano."
 	},
 	{
 		id: "box-jump",
@@ -339,6 +371,16 @@ var EXERCISES = [
 		unitNote: "Cada repetición es una subida."
 	}
 ];
+function exerciseUnits(def) {
+	return def.units ?? ["reps"];
+}
+function workRange(def, mode, unit) {
+	if (unit === "meters") {
+		const meters = mode === "sprint" ? def.meterSprint : def.meterPacing;
+		if (meters) return meters;
+	}
+	return mode === "sprint" ? def.sprint : def.pacing;
+}
 //#endregion
 //#region src/wodScore.ts
 function repsPerRound(reps) {
@@ -425,7 +467,8 @@ var REFERENCE_KG = {
 	"devil-press": 22.5,
 	"db-snatch": 22.5,
 	"wall-ball": 9,
-	kettlebell: 24
+	kettlebell: 24,
+	"farmer-carry": 24
 };
 var DISTANCE_PACE = {
 	run: {
@@ -485,6 +528,17 @@ var REP_SEC = {
 	scaled: (def) => def.pacing.max,
 	intermediate: (def) => (def.pacing.min + def.pacing.max) / 2,
 	rx: (def) => (def.sprint.min + def.sprint.max) / 2
+};
+var METER_SEC = {
+	scaled: (def) => workRange(def, "pacing", "meters").max,
+	intermediate: (def) => {
+		const range = workRange(def, "pacing", "meters");
+		return (range.min + range.max) / 2;
+	},
+	rx: (def) => {
+		const range = workRange(def, "sprint", "meters");
+		return (range.min + range.max) / 2;
+	}
 };
 var WOD_TYPES = /* @__PURE__ */ new Set([
 	"for_time",
@@ -707,7 +761,11 @@ function buildPiece(exercise) {
 	};
 	let known = false;
 	let numericReps = null;
-	if (movement && amount.reps != null) {
+	if (movement && amount.meters != null && exerciseUnits(movement).includes("meters")) {
+		known = true;
+		const factor = loadFactor(movement.id, weight);
+		for (const level of LEVELS) seconds[level.id] = Math.max(1, Math.round(METER_SEC[level.id](movement) * amount.meters * factor));
+	} else if (movement && amount.reps != null) {
 		known = true;
 		numericReps = amount.reps;
 		const factor = loadFactor(movement.id, weight);
