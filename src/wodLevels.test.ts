@@ -47,6 +47,80 @@ assert.equal(carry.intermediate.elapsedSec, 30)
 assert.equal(carry.rx.elapsedSec, 17)
 assert.equal(carry.confidence, 'high')
 
+const box = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Box step', reps: '10', weightKg: null }],
+})
+assert.equal(box.scaled.elapsedSec, 26)
+assert.equal(box.intermediate.elapsedSec, 23)
+assert.equal(box.rx.elapsedSec, 15)
+assert.equal(box.confidence, 'high')
+
+const loadedBox = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Box step', reps: '10', weightKg: 20 }],
+})
+assert.equal(loadedBox.intermediate.elapsedSec, 31)
+assert.ok((loadedBox.intermediate.elapsedSec ?? 0) > (box.intermediate.elapsedSec ?? 0))
+
+const plate = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Burpees plate', reps: '10', weightKg: 15 }],
+})
+assert.equal(plate.intermediate.elapsedSec, 37)
+assert.equal(plate.confidence, 'high')
+
+const heavyPlate = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Burpees plate', reps: '10', weightKg: 25 }],
+})
+assert.ok((heavyPlate.intermediate.elapsedSec ?? 0) > (plate.intermediate.elapsedSec ?? 0))
+
+const sitUps = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Sit-ups', reps: '10', weightKg: null }],
+})
+assert.equal(sitUps.intermediate.elapsedSec, 16)
+assert.equal(sitUps.confidence, 'high')
+
+const loadedSitUps = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Sit-ups', reps: '10', weightKg: 10 }],
+})
+assert.equal(loadedSitUps.intermediate.elapsedSec, 22)
+assert.ok((loadedSitUps.intermediate.elapsedSec ?? 0) > (sitUps.intermediate.elapsedSec ?? 0))
+
+const slamBall = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Slam ball', reps: '10', weightKg: 9 }],
+})
+assert.equal(slamBall.scaled.elapsedSec, 24)
+assert.equal(slamBall.intermediate.elapsedSec, 21)
+assert.equal(slamBall.rx.elapsedSec, 14)
+assert.equal(slamBall.confidence, 'high')
+
+const heavySlam = estimateCatalog({
+  type: 'for_time',
+  rounds: 1,
+  timeCapSec: null,
+  exercises: [{ name: 'Slam ball', reps: '10', weightKg: 20 }],
+})
+assert.ok((heavySlam.intermediate.elapsedSec ?? 0) > (slamBall.intermediate.elapsedSec ?? 0))
+
 const unknown = estimateCatalog({
   type: 'for_time',
   rounds: 1,

@@ -232,6 +232,20 @@ var EXERCISES = [
 		}
 	},
 	{
+		id: "sit-up",
+		name: "Sit-ups",
+		group: "gimnasticos",
+		pacing: {
+			min: 1.4,
+			max: 1.8
+		},
+		sprint: {
+			min: 1,
+			max: 1.2
+		},
+		unitNote: "El peso es el del disco o la mancuerna, si se hace lastrado."
+	},
+	{
 		id: "burpee",
 		name: "Burpees",
 		group: "otros",
@@ -258,6 +272,20 @@ var EXERCISES = [
 		}
 	},
 	{
+		id: "burpee-plate",
+		name: "Burpees plate",
+		group: "otros",
+		pacing: {
+			min: 3.2,
+			max: 4.2
+		},
+		sprint: {
+			min: 2.2,
+			max: 2.7
+		},
+		unitNote: "Cada repetición es un burpee con el disco. El peso es el del disco."
+	},
+	{
 		id: "wall-ball",
 		name: "Wall balls",
 		group: "otros",
@@ -269,6 +297,20 @@ var EXERCISES = [
 			min: 1.8,
 			max: 2
 		}
+	},
+	{
+		id: "slam-ball",
+		name: "Slam ball",
+		group: "otros",
+		pacing: {
+			min: 1.8,
+			max: 2.4
+		},
+		sprint: {
+			min: 1.2,
+			max: 1.6
+		},
+		unitNote: "El peso es el de la bola."
 	},
 	{
 		id: "lunge",
@@ -329,6 +371,34 @@ var EXERCISES = [
 			max: 2
 		},
 		unitNote: "El sprint cuenta el rebote."
+	},
+	{
+		id: "box-step",
+		name: "Box step",
+		group: "otros",
+		pacing: {
+			min: 2,
+			max: 2.6
+		},
+		sprint: {
+			min: 1.4,
+			max: 1.7
+		},
+		unitNote: "Cada repetición es una subida y bajada. El peso es el total de las mancuernas."
+	},
+	{
+		id: "box-step-over",
+		name: "Box step over",
+		group: "otros",
+		pacing: {
+			min: 2.6,
+			max: 3.4
+		},
+		sprint: {
+			min: 1.8,
+			max: 2.2
+		},
+		unitNote: "Cada repetición es pasar el cajón. El peso es el total de las mancuernas."
 	},
 	{
 		id: "kettlebell",
@@ -467,8 +537,15 @@ var REFERENCE_KG = {
 	"devil-press": 22.5,
 	"db-snatch": 22.5,
 	"wall-ball": 9,
+	"slam-ball": 9,
 	kettlebell: 24,
-	"farmer-carry": 24
+	"farmer-carry": 24,
+	"burpee-plate": 15
+};
+var ADDED_LOAD_KG = {
+	"box-step": 20,
+	"box-step-over": 20,
+	"sit-up": 10
 };
 var DISTANCE_PACE = {
 	run: {
@@ -794,6 +871,11 @@ function buildPiece(exercise) {
 	};
 }
 function loadFactor(id, weightKg) {
+	const added = ADDED_LOAD_KG[id];
+	if (added != null) {
+		if (weightKg == null || weightKg <= 0) return 1;
+		return Math.min(1.7, 1 + .35 * (weightKg / added));
+	}
 	const reference = REFERENCE_KG[id];
 	if (reference == null || weightKg == null) return 1;
 	return Math.min(1.7, Math.max(.75, 1 + .4 * (weightKg / reference - 1)));

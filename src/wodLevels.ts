@@ -66,8 +66,17 @@ const REFERENCE_KG: Record<string, number> = {
   'devil-press': 22.5,
   'db-snatch': 22.5,
   'wall-ball': 9,
+  'slam-ball': 9,
   kettlebell: 24,
   'farmer-carry': 24,
+  'burpee-plate': 15,
+}
+
+// Catalog pace is bodyweight. Any added kilograms slow the rep; missing weight stays at that pace.
+const ADDED_LOAD_KG: Record<string, number> = {
+  'box-step': 20,
+  'box-step-over': 20,
+  'sit-up': 10,
 }
 
 const DISTANCE_PACE: Record<CardioId, Record<LevelId, number>> = {
@@ -414,6 +423,11 @@ function buildPiece(exercise: LevelExerciseInput): BuiltPiece {
 }
 
 function loadFactor(id: string, weightKg: number | null): number {
+  const added = ADDED_LOAD_KG[id]
+  if (added != null) {
+    if (weightKg == null || weightKg <= 0) return 1
+    return Math.min(1.7, 1 + 0.35 * (weightKg / added))
+  }
   const reference = REFERENCE_KG[id]
   if (reference == null || weightKg == null) return 1
   return Math.min(1.7, Math.max(0.75, 1 + 0.4 * (weightKg / reference - 1)))

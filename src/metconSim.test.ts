@@ -24,7 +24,7 @@ assert.deepEqual(
   CARDIO.map((item) => item.id),
   ['run', 'bikerg', 'skierg', 'rowerg', 'assault'],
 )
-assert.equal(EXERCISES.length, 25)
+assert.equal(EXERCISES.length, 30)
 
 const thruster = exerciseDef('thruster')
 assert.equal(secondsForReps(thruster, 'pacing', 21), 58)
@@ -56,6 +56,21 @@ assert.equal(piecePace(farmerPiece), '1,5 s/m')
 const lunge = exerciseDef('lunge')
 assert.equal(secondsForReps(lunge, 'pacing', 10), 17)
 assert.equal(secondsForReps(lunge, 'pacing', 20, 'meters'), 33)
+
+const boxStep = exerciseDef('box-step')
+assert.equal(secondsForReps(boxStep, 'pacing', 10), 23)
+assert.equal(formatRange(boxStep.pacing), '2,0–2,6 s/rep')
+const boxStepOver = exerciseDef('box-step-over')
+assert.equal(secondsForReps(boxStepOver, 'pacing', 10), 30)
+const burpeePlate = exerciseDef('burpee-plate')
+assert.equal(secondsForReps(burpeePlate, 'pacing', 10), 37)
+assert.equal(formatRange(burpeePlate.pacing), '3,2–4,2 s/rep')
+const sitUp = exerciseDef('sit-up')
+assert.equal(secondsForReps(sitUp, 'pacing', 10), 16)
+assert.equal(formatRange(sitUp.pacing), '1,4–1,8 s/rep')
+const slam = exerciseDef('slam-ball')
+assert.equal(secondsForReps(slam, 'pacing', 10), 21)
+assert.equal(formatRange(slam.pacing), '1,8–2,4 s/rep')
 
 const example = exampleMetcon()
 const result = simulate(example.rounds, example.pieces)
