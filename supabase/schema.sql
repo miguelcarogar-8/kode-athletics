@@ -77,3 +77,5 @@ alter table public.wod_exercises add column if not exists weight_kg numeric(5, 1
 alter table public.wod_exercises drop constraint if exists wod_exercises_weight_kg_check;
 alter table public.wod_exercises add constraint wod_exercises_weight_kg_check
   check (weight_kg is null or (weight_kg >= 1 and weight_kg <= 300));
+
+alter table public.wods add column if not exists level_targets jsonb;

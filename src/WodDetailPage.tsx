@@ -2,12 +2,15 @@ import { useEffect, useState, type FormEvent } from 'react'
 import { Link, useNavigate, useParams } from 'react-router-dom'
 import { AppHeader } from './AppHeader'
 import { formatKg } from './metconSim'
+import { requestWodLevels } from './requestWodLevels'
+import { LEVELS, levelMarkLabel, readLevel } from './wodLevels'
 import {
   addWodScore,
   deleteWod,
   deleteWodScore,
   formatWodKind,
   getWod,
+  saveWodLevels,
   type WodDetail,
   type WodType,
 } from './wodsApi'
@@ -58,6 +61,7 @@ export function WodDetailPage() {
   const [reps, setReps] = useState('')
   const [notes, setNotes] = useState('')
   const [saving, setSaving] = useState(false)
+  const [estimating, setEstimating] = useState(false)
 
   useEffect(() => {
     if (!wodId) return
@@ -158,6 +162,20 @@ export function WodDetailPage() {
     }
   }
 
+  const estimateLevels = async () => {
+    if (!wod) return
+    setEstimating(true)
+    setError(null)
+    try {
+      const targets = await requestWodLevels(wod)
+      setWod(await saveWodLevels(wod.id, targets))
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'No se pudieron calcular los niveles')
+    } finally {
+      setEstimating(false)
+    }
+  }
+
   const removeScore = async (scoreId: number) => {
     if (!wod) return
     if (!window.confirm('¿Quitar esta marca?')) return
@@ -239,6 +257,8 @@ export function WodDetailPage() {
               </ol>
             </section>
           ))}
+
+          <LevelPanel wod={wod} estimating={estimating} onEstimate={() => void estimateLevels()} />
 
           <section className="wods__progress" aria-label="Mejor marca">
             <p>Mejor marca</p>
@@ -388,5 +408,52 @@ export function WodDetailPage() {
         </>
       ) : null}
     </main>
+  )
+}
+
+function LevelPanel({
+  wod,
+  estimating,
+  onEstimate,
+}: {
+  wod: WodDetail
+  estimating: boolean
+  onEstimate: () => void
+}) {
+  const targets = wod.levelTargets
+  const best = wod.scores.find((score) => score.isBest) ?? null
+  const reading =
+    targets && best
+      ? readLevel(
+          wod.type,
+          targets,
+          best,
+          wod.exercises.map((exercise) => exercise.reps),
+        )
+      : null
+
+  return (
+    <section className="wods__levels" aria-label="Niveles">
+      <h2>Niveles</h2>
+      {targets ? (
+        <>
+          <ol>
+            {LEVELS.map((level) => (
+              <li key={level.id} className={reading?.level === level.id ? 'is-current' : undefined}>
+                <span>{level.label}</span>
+                <strong>{levelMarkLabel(wod.type, targets[level.id])}</strong>
+              </li>
+            ))}
+          </ol>
+          <p>{reading?.summary ?? 'Anota una marca para ver en qué nivel estás.'}</p>
+          {targets.note ? <p className="wods__levels-note">{targets.note}</p> : null}
+        </>
+      ) : (
+        <p className="wods__levels-note">Todavía no hay ritmos para este WOD.</p>
+      )}
+      <button type="button" className="wods__ghost" disabled={estimating} onClick={onEstimate}>
+        {estimating ? 'Calculando…' : targets ? 'Recalcular' : 'Calcular niveles'}
+      </button>
+    </section>
   )
 }

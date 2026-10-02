@@ -257,6 +257,70 @@
   font-variant-numeric: tabular-nums;
 }
 
+.wods__levels {
+  margin: 0 0 1.5rem;
+  max-width: 36rem;
+}
+
+.wods__levels h2 {
+  margin: 0 0 0.7rem;
+  font-size: 1.05rem;
+}
+
+.wods__levels ol {
+  list-style: none;
+  margin: 0.75rem 0;
+  padding: 0;
+  display: grid;
+  gap: 0.45rem;
+}
+
+.wods__levels li {
+  display: flex;
+  justify-content: space-between;
+  gap: 1rem;
+  padding: 0.7rem 0.85rem;
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 0.4rem;
+  background: rgba(255, 255, 255, 0.03);
+}
+
+.wods__levels li.is-current {
+  border-color: rgba(var(--color-primary-rgb), 0.45);
+  background: rgba(var(--color-primary-rgb), 0.08);
+}
+
+.wods__levels strong {
+  font-variant-numeric: tabular-nums;
+  color: var(--color-primary);
+}
+
+.wods__levels p {
+  margin: 0 0 0.75rem;
+}
+
+.wods__levels-note {
+  margin: 0 0 0.85rem;
+  color: rgba(244, 241, 236, 0.62);
+  line-height: 1.45;
+}
+
+.wods__ghost {
+  appearance: none;
+  border-radius: 0.35rem;
+  padding: 0.7rem 1rem;
+  font: inherit;
+  cursor: pointer;
+  border: 1px solid rgba(244, 241, 236, 0.25);
+  background: transparent;
+  color: rgba(244, 241, 236, 0.85);
+}
+
+.wods__ghost:disabled {
+  opacity: 0.6;
+  cursor: wait;
+}
+
 .wods__progress {
   margin: 0 0 1.5rem;
   max-width: 36rem;

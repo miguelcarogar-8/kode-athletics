@@ -1,5 +1,6 @@
 import { normalizeWeightKg } from './metconSim'
 import { supabase } from './supabase'
+import { readStoredTargets, type LevelTargets } from './wodLevels'
 import { annotateScores, type WodType } from './wodScore'
 
 export type { WodType }
@@ -68,6 +69,7 @@ export interface WodDetail {
   bestLabel: string | null
   sinceFirstLabel: string | null
   rounds: number
+  levelTargets: LevelTargets | null
 }
 
 export interface CreateWodInput {
@@ -95,6 +97,7 @@ interface WodRow {
   rounds: number | null
   notes: string | null
   created_at: string
+  level_targets?: unknown
 }
 
 interface ExerciseRow {
@@ -291,6 +294,21 @@ export async function addWodScore(id: string, input: CreateWodScoreInput): Promi
   return detail(id)
 }
 
+export async function saveWodLevels(id: string, targets: LevelTargets): Promise<WodDetail> {
+  const existing = await client().from('wods').select('id, type').eq('id', id).maybeSingle()
+  assertOk(existing.error)
+  const wod = existing.data as { id: string; type: WodType } | null
+  if (!wod) throw new Error('No se encontró el WOD.')
+  const stored = readStoredTargets(targets, wod.type)
+  if (!stored) throw new Error('Los niveles no encajan con este WOD.')
+  const updated = await client().from('wods').update({ level_targets: stored }).eq('id', id).select('id')
+  assertOk(updated.error)
+  if (!Array.isArray(updated.data) || updated.data.length === 0) {
+    throw new Error('No se encontró el WOD.')
+  }
+  return detail(id)
+}
+
 export async function deleteWodScore(id: string, scoreId: number): Promise<WodDetail> {
   const removed = await client().from('wod_scores').delete().eq('id', scoreId).eq('wod_id', id).select('id')
   assertOk(removed.error)
@@ -303,11 +321,23 @@ export async function deleteWodScore(id: string, scoreId: number): Promise<WodDe
 async function detail(id: string): Promise<WodDetail> {
   const wodQuery = await client()
     .from('wods')
-    .select('id, name, type, time_cap_sec, rounds, notes, created_at')
+    .select('id, name, type, time_cap_sec, rounds, notes, created_at, level_targets')
     .eq('id', id)
     .maybeSingle()
+  if (missingLevelColumn(wodQuery.error)) {
+    const legacy = await client()
+      .from('wods')
+      .select('id, name, type, time_cap_sec, rounds, notes, created_at')
+      .eq('id', id)
+      .maybeSingle()
+    assertOk(legacy.error)
+    return assemble(legacy.data as WodRow | null, id)
+  }
   assertOk(wodQuery.error)
-  const wod = wodQuery.data as WodRow | null
+  return assemble(wodQuery.data as WodRow | null, id)
+}
+
+async function assemble(wod: WodRow | null, id: string): Promise<WodDetail> {
   if (!wod) throw new Error('No se encontró el WOD.')
 
   const [exercises, scores] = await Promise.all([
@@ -363,6 +393,7 @@ async function detail(id: string): Promise<WodDetail> {
     })),
     bestLabel: annotated.bestLabel,
     sinceFirstLabel: annotated.sinceFirstLabel,
+    levelTargets: readStoredTargets(wod.level_targets, wod.type),
   }
 }
 
@@ -394,6 +425,11 @@ async function currentUserId(): Promise<string> {
   return data.user.id
 }
 
+function missingLevelColumn(error: { message: string; code?: string } | null): boolean {
+  if (!error) return false
+  return error.code === '42703' || /level_targets/i.test(error.message)
+}
+
 function assertOk(error: { message: string; code?: string } | null): void {
   if (!error) return
   const missing =
@@ -402,6 +438,9 @@ function assertOk(error: { message: string; code?: string } | null): void {
     /schema cache/i.test(error.message) ||
     /does not exist/i.test(error.message)
   if (missing) throw new Error(MISSING_TABLE)
+  if (missingLevelColumn(error)) {
+    throw new Error('Falta la columna de niveles en Supabase. Ejecuta el final de supabase/schema.sql.')
+  }
   if (/row-level security/i.test(error.message)) {
     throw new Error('No tienes permiso para guardar este WOD.')
   }

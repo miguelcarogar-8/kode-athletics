@@ -3,7 +3,8 @@ import { Link, useNavigate } from 'react-router-dom'
 import { AppHeader } from './AppHeader'
 import { SortablePieceList, createCardio, createExercise, reorderPieces } from './components/PieceCard'
 import { CARDIO, clampRounds, exerciseDef, type MetconPiece } from './metconSim'
-import { createWod, WOD_TYPES, type WodType } from './wodsApi'
+import { requestWodLevels } from './requestWodLevels'
+import { createWod, saveWodLevels, WOD_TYPES, type WodType } from './wodsApi'
 
 function prescription(piece: MetconPiece): { name: string; reps: string; weightKg: number | null } {
   if (piece.kind === 'exercise') {
@@ -24,6 +25,7 @@ export function WodCreatePage() {
   const [rounds, setRounds] = useState(1)
   const [openIds, setOpenIds] = useState<Set<string>>(() => new Set())
   const [saving, setSaving] = useState(false)
+  const [estimating, setEstimating] = useState(false)
   const [error, setError] = useState<string | null>(null)
   const selected = WOD_TYPES.find((item) => item.id === type) ?? WOD_TYPES[0]
   const durationRequired = type === 'amrap' || type === 'emom'
@@ -69,10 +71,19 @@ export function WodCreatePage() {
         ...(type === 'for_time' ? { rounds } : {}),
         exercises: cleanExercises,
       })
+      setSaving(false)
+      setEstimating(true)
+      try {
+        const targets = await requestWodLevels(created)
+        await saveWodLevels(created.id, targets)
+      } catch {
+        // El WOD ya está guardado. La ficha permite calcular los niveles otra vez.
+      }
       navigate(`/wods/${created.id}`)
     } catch (err) {
       setError(err instanceof Error ? err.message : 'No se pudo guardar el WOD')
       setSaving(false)
+      setEstimating(false)
     }
   }
 
@@ -184,8 +195,8 @@ export function WodCreatePage() {
           <textarea value={notes} maxLength={500} onChange={(event) => setNotes(event.target.value)} />
         </label>
 
-        <button type="submit" className="wods__primary" disabled={saving}>
-          {saving ? 'Guardando…' : 'Guardar WOD'}
+        <button type="submit" className="wods__primary" disabled={saving || estimating}>
+          {estimating ? 'Calculando niveles…' : saving ? 'Guardando…' : 'Guardar WOD'}
         </button>
       </form>
     </main>
